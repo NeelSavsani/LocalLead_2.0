@@ -119,18 +119,18 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-slate-100 text-slate-900 selection:bg-emerald-500 selection:text-white">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-slate-200 w-full">
+      <header className="sticky top-0 z-50 bg-white backdrop-blur-lg border-b border-slate-200 w-full">
         <div className="w-full px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <Radar className="w-5 h-5 text-white animate-subtle" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-base tracking-tight text-slate-900">LocalLeadPulse</span>
-                <span className="text-[10px] uppercase font-mono font-bold bg-indigo-500/10 text-indigo-600 px-1.5 py-0.5 rounded border border-indigo-500/20">
+                <span className="text-[10px] uppercase font-mono font-bold bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded border border-emerald-500/20">
                   v2.0
                 </span>
               </div>
@@ -146,7 +146,7 @@ export default function DashboardPage() {
               onClick={() => setActiveTab("dashboard")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 activeTab === "dashboard"
-                  ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                   : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >

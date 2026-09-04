@@ -97,15 +97,15 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl p-6 shadow-2xl relative overflow-hidden"
+      className="bg-white backdrop-blur-md border border-slate-200 rounded-2xl p-6 shadow-2xl relative overflow-hidden"
     >
-      <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
         {/* 1. Target Location Input */}
         <div className="space-y-2 md:col-span-1">
           <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+            <MapPin className="w-3.5 h-3.5 text-emerald-400" />
             Target Location / Any City
           </label>
           <div className="relative">
@@ -115,7 +115,7 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
               onChange={(e) => setLocation(e.target.value)}
               disabled={isScanning}
               placeholder="e.g. Surat, Gujarat"
-              className="w-full bg-slate-50/80 border border-slate-300 focus:border-indigo-500 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all disabled:opacity-60"
+              className="w-full bg-slate-50/80 border border-slate-300 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all disabled:opacity-60"
             />
           </div>
           {/* Location quick chips */}
@@ -128,7 +128,7 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
                 disabled={isScanning}
                 className={`text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
                   location === loc
-                    ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                     : "bg-slate-100 text-slate-600 border-slate-200 hover:text-slate-900"
                 }`}
               >
@@ -142,7 +142,7 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
         <div className="space-y-2 md:col-span-1">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-indigo-400" />
+              <Layers className="w-3.5 h-3.5 text-emerald-400" />
               Target Categories ({selectedCategories.length} selected)
             </label>
           </div>
@@ -152,7 +152,7 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
             {selectedCategories.map((cat) => (
               <span
                 key={cat}
-                className="inline-flex items-center gap-1 bg-indigo-100 text-indigo-800 border border-indigo-200 px-2.5 py-1 rounded-lg text-xs font-medium"
+                className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-medium"
               >
                 {cat}
                 {selectedCategories.length > 1 && !isScanning && (
@@ -177,7 +177,7 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
               onKeyDown={handleKeyDown}
               disabled={isScanning}
               placeholder="Type custom niche & press Enter..."
-              className="flex-1 bg-slate-50 border border-slate-300 focus:border-indigo-500 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none"
+              className="flex-1 bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none"
             />
             <button
               type="button"
@@ -202,7 +202,7 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
                   disabled={isScanning}
                   className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 ${
                     isSelected
-                      ? "bg-indigo-600 text-white border-indigo-500 shadow-sm"
+                      ? "bg-emerald-600 text-white border-emerald-500 shadow-sm"
                       : "bg-slate-100 text-slate-600 border-slate-200 hover:text-slate-900"
                   }`}
                 >
@@ -219,10 +219,10 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
           <div>
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                <Hash className="w-3.5 h-3.5 text-indigo-400" />
+                <Hash className="w-3.5 h-3.5 text-emerald-400" />
                 Lead Limit (Strict Cap)
               </label>
-              <span className="text-[11px] font-mono text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+              <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                 Target: {limit} leads
               </span>
             </div>
@@ -235,7 +235,7 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
                 value={limit}
                 onChange={(e) => setLimit(parseInt(e.target.value))}
                 disabled={isScanning}
-                className="w-full accent-indigo-500 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-60"
+                className="w-full accent-emerald-500 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-60"
               />
               <input
                 type="number"
@@ -258,7 +258,7 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
                   disabled={isScanning}
                   className={`text-[11px] font-mono px-2 py-0.5 rounded border transition-colors ${
                     limit === p
-                      ? "bg-indigo-600 text-white border-indigo-500"
+                      ? "bg-emerald-600 text-white border-emerald-500"
                       : "bg-slate-100 text-slate-600 border-slate-200 hover:text-slate-900"
                   }`}
                 >
@@ -283,7 +283,7 @@ export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: 
               <button
                 type="submit"
                 disabled={selectedCategories.length === 0}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-medium py-3.5 px-6 rounded-xl shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-medium py-3.5 px-6 rounded-xl shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Zap className="w-4 h-4 fill-current" />
                 <span>Start Live Scan ({selectedCategories.length} Categories, Cap: {limit})</span>

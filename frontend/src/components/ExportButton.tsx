@@ -20,7 +20,7 @@ export default function ExportButton({ jobId, leadsCount, isScanning }: ExportBu
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-white to-indigo-50/50 p-5 rounded-2xl border border-slate-200 shadow-xl">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-white to-emerald-50/50 p-5 rounded-2xl border border-slate-200 shadow-xl">
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
           <FileSpreadsheet className="w-6 h-6" />

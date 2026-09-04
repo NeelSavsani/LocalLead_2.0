@@ -46,7 +46,7 @@ export default function LiveProgress({
         );
       case "EVALUATING":
         return (
-          <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 animate-pulse">
+          <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
             <Activity className="w-3 h-3 animate-spin" />
             Evaluating Candidate
           </span>
@@ -71,12 +71,12 @@ export default function LiveProgress({
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl p-6 shadow-xl space-y-5">
+    <div className="bg-white backdrop-blur-md border border-slate-200 rounded-2xl p-6 shadow-xl space-y-5">
       {/* Telemetry Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center">
-            <Activity className="w-5 h-5 text-indigo-400" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center">
+            <Activity className="w-5 h-5 text-emerald-400" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-slate-900 tracking-wide flex items-center gap-2">
@@ -102,8 +102,8 @@ export default function LiveProgress({
               <span className="text-slate-600 text-sm"> / {targetLimit}</span>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-full border-2 border-indigo-200 flex items-center justify-center relative">
-            <span className="text-xs font-mono font-bold text-indigo-600">{percentage}%</span>
+          <div className="w-12 h-12 rounded-full border-2 border-emerald-200 flex items-center justify-center relative">
+            <span className="text-xs font-mono font-bold text-emerald-600">{percentage}%</span>
           </div>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function LiveProgress({
       <div className="space-y-1.5">
         <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
           <div
-            className="bg-gradient-to-r from-indigo-500 via-teal-400 to-emerald-400 h-full transition-all duration-300 ease-out rounded-full"
+            className="bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 h-full transition-all duration-300 ease-out rounded-full"
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -126,7 +126,7 @@ export default function LiveProgress({
       <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-300 space-y-2">
         <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-300 pb-2">
           <span className="flex items-center gap-1.5 font-mono text-slate-700">
-            <Terminal className="w-3.5 h-3.5 text-indigo-600" />
+            <Terminal className="w-3.5 h-3.5 text-emerald-600" />
             Scanning Feed
           </span>
           {currentEvent && getStatusBadge(currentEvent.status)}
@@ -135,7 +135,7 @@ export default function LiveProgress({
         <div className="font-mono text-xs space-y-1">
           {currentEvent ? (
             <div className="text-slate-700">
-              <span className="text-indigo-600 font-bold">&gt; [{currentEvent.candidate_name}]:</span>{" "}
+              <span className="text-emerald-600 font-bold">&gt; [{currentEvent.candidate_name}]:</span>{" "}
               <span>{currentEvent.reason}</span>
             </div>
           ) : (

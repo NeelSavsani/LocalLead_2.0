@@ -12,8 +12,8 @@ interface LeadTableProps {
 export default function LeadTable({ leads, isScanning }: LeadTableProps) {
   if (leads.length === 0) {
     return (
-      <div className="bg-white/60 backdrop-blur-md border border-slate-200 rounded-2xl p-12 text-center shadow-xl">
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4">
+      <div className="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-12 text-center shadow-xl">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
           <Building2 className="w-8 h-8" />
         </div>
         <h3 className="text-base font-semibold text-slate-900 mb-1">No Verified Leads Collected Yet</h3>
@@ -27,7 +27,7 @@ export default function LeadTable({ leads, isScanning }: LeadTableProps) {
   }
 
   return (
-    <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl overflow-hidden">
+    <div className="bg-white backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl overflow-hidden">
       <div className="p-4 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-slate-900 tracking-wide flex items-center gap-2">
@@ -65,7 +65,7 @@ export default function LeadTable({ leads, isScanning }: LeadTableProps) {
                   {lead.id}
                 </td>
                 <td className="py-3.5 px-4">
-                  <div className="font-semibold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors">
+                  <div className="font-semibold text-slate-900 text-sm group-hover:text-emerald-600 transition-colors">
                     {lead.name}
                   </div>
                   {lead.maps_url && (
@@ -73,7 +73,7 @@ export default function LeadTable({ leads, isScanning }: LeadTableProps) {
                       href={lead.maps_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] text-indigo-600 hover:text-indigo-500 mt-0.5"
+                      className="inline-flex items-center gap-1 text-[11px] text-emerald-600 hover:text-emerald-500 mt-0.5"
                     >
                       <span>View on Google Maps</span>
                       <ExternalLink className="w-2.5 h-2.5" />
@@ -81,7 +81,7 @@ export default function LeadTable({ leads, isScanning }: LeadTableProps) {
                   )}
                 </td>
                 <td className="py-3.5 px-4">
-                  <span className="bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-lg border border-indigo-200 text-[11px] font-medium">
+                  <span className="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 text-[11px] font-medium">
                     {lead.category}
                   </span>
                 </td>
@@ -104,7 +104,7 @@ export default function LeadTable({ leads, isScanning }: LeadTableProps) {
                   </div>
                   {lead.area && (
                     <span className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
+                      <MapPin className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
                       {lead.area}
                     </span>
                   )}

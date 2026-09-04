@@ -19,7 +19,7 @@ Sales Rep: "We help local businesses in Gandhinagar get an affordable, clean web
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl p-6 shadow-xl space-y-6">
+    <div className="bg-white backdrop-blur-md border border-slate-200 rounded-2xl p-6 shadow-xl space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
@@ -56,11 +56,11 @@ Sales Rep: "We help local businesses in Gandhinagar get an affordable, clean web
       {/* The Dialogue Flow */}
       <div className="space-y-3 font-sans text-xs">
         <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-          <span className="text-indigo-600 font-semibold uppercase tracking-wider text-[10px]">
+          <span className="text-emerald-600 font-semibold uppercase tracking-wider text-[10px]">
             1. Opening & Verification
           </span>
           <p className="text-slate-700">
-            <strong className="text-slate-900">You:</strong> &quot;Hello, is this the owner or manager of <span className="text-indigo-600 font-mono">[Business Name]</span>?&quot;
+            <strong className="text-slate-900">You:</strong> &quot;Hello, is this the owner or manager of <span className="text-emerald-600 font-mono">[Business Name]</span>?&quot;
           </p>
           <p className="text-slate-500 italic">
             <strong className="text-slate-700">Owner:</strong> &quot;Yes, speaking. What is this about?&quot;
@@ -68,11 +68,11 @@ Sales Rep: "We help local businesses in Gandhinagar get an affordable, clean web
         </div>
 
         <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-          <span className="text-indigo-600 font-semibold uppercase tracking-wider text-[10px]">
+          <span className="text-emerald-600 font-semibold uppercase tracking-wider text-[10px]">
             2. The Hook & The Gap
           </span>
           <p className="text-slate-700">
-            <strong className="text-slate-900">You:</strong> &quot;Namaste sir/ma&apos;am. I was looking for services near <span className="text-indigo-600 font-mono">[Kudasan / Infocity / Sector 11]</span> on Google. I noticed that while your competitors have their own website where customers book directly, your Google listing doesn&apos;t have an official website attached.&quot;
+            <strong className="text-slate-900">You:</strong> &quot;Namaste sir/ma&apos;am. I was looking for services near <span className="text-emerald-600 font-mono">[Kudasan / Infocity / Sector 11]</span> on Google. I noticed that while your competitors have their own website where customers book directly, your Google listing doesn&apos;t have an official website attached.&quot;
           </p>
           <p className="text-slate-500 italic">
             <strong className="text-slate-700">Owner:</strong> &quot;Yes, we don&apos;t have one right now.&quot;
@@ -97,25 +97,25 @@ Sales Rep: "We help local businesses in Gandhinagar get an affordable, clean web
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
           <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-            <div className="font-semibold text-indigo-700">Auto Garage / Workshop</div>
+            <div className="font-semibold text-emerald-700">Auto Garage / Workshop</div>
             <div className="text-slate-500 text-[11px]">
               &quot;Online breakdown assistance and WhatsApp service slot booking&quot;
             </div>
           </div>
           <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-            <div className="font-semibold text-indigo-700">Cafe / Restaurant</div>
+            <div className="font-semibold text-emerald-700">Cafe / Restaurant</div>
             <div className="text-slate-500 text-[11px]">
               &quot;Save 25-30% commissions on Swiggy/Zomato with a direct online menu&quot;
             </div>
           </div>
           <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-            <div className="font-semibold text-indigo-700">Clinic / Dentist</div>
+            <div className="font-semibold text-emerald-700">Clinic / Dentist</div>
             <div className="text-slate-500 text-[11px]">
               &quot;Automated patient slot booking with zero receptionist queueing&quot;
             </div>
           </div>
           <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-            <div className="font-semibold text-indigo-700">Hardware / Boutique</div>
+            <div className="font-semibold text-emerald-700">Hardware / Boutique</div>
             <div className="text-slate-500 text-[11px]">
               &quot;Interactive digital product showcase with direct WhatsApp quotation&quot;
             </div>
