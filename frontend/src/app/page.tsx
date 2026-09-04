@@ -119,9 +119,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#090D16] text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-500 selection:text-white">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-[#090D16]/90 backdrop-blur-lg border-b border-slate-800/80 w-full">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-slate-200 w-full">
         <div className="w-full px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -129,12 +129,12 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-base tracking-tight text-white">LocalLeadPulse</span>
-                <span className="text-[10px] uppercase font-mono font-bold bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/30">
+                <span className="font-bold text-base tracking-tight text-slate-900">LocalLeadPulse</span>
+                <span className="text-[10px] uppercase font-mono font-bold bg-indigo-500/10 text-indigo-600 px-1.5 py-0.5 rounded border border-indigo-500/20">
                   v2.0
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block">
+              <p className="text-[11px] text-slate-500 hidden sm:block">
                 Two-Layer Verified B2B Lead Engine for Local Businesses Without Websites
               </p>
             </div>
@@ -146,8 +146,8 @@ export default function DashboardPage() {
               onClick={() => setActiveTab("dashboard")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 activeTab === "dashboard"
-                  ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/40"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/40"
+                  ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
@@ -158,8 +158,8 @@ export default function DashboardPage() {
               onClick={() => setActiveTab("playbook")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 activeTab === "playbook"
-                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/40"
+                  ? "bg-amber-50 text-amber-700 border border-amber-200"
+                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
               <PhoneCall className="w-3.5 h-3.5" />
@@ -233,7 +233,7 @@ export default function DashboardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/60 py-6 text-center text-xs text-slate-500">
+      <footer className="border-t border-slate-200 bg-white/60 py-6 text-center text-xs text-slate-500">
         <p>
           LocalLeadPulse 2.0 • Dual-Layer Verification Engine (Maps Listing & Aggregator Blacklist Exclusion)
         </p>

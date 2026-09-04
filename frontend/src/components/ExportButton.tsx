@@ -20,19 +20,19 @@ export default function ExportButton({ jobId, leadsCount, isScanning }: ExportBu
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-indigo-950/40 p-5 rounded-2xl border border-slate-800 shadow-xl">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-white to-indigo-50/50 p-5 rounded-2xl border border-slate-200 shadow-xl">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+        <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
           <FileSpreadsheet className="w-6 h-6" />
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
             Outreach-Ready Excel Workbook
-            <span className="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">
+            <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">
               .xlsx
             </span>
           </h4>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500">
             Pre-configured with Dark Navy header pane, CRM Call Status dropdowns, and formatted phone links
           </p>
         </div>

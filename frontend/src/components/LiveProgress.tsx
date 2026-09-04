@@ -71,7 +71,7 @@ export default function LiveProgress({
   };
 
   return (
-    <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+    <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl p-6 shadow-xl space-y-5">
       {/* Telemetry Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -79,38 +79,38 @@ export default function LiveProgress({
             <Activity className="w-5 h-5 text-indigo-400" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white tracking-wide flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-slate-900 tracking-wide flex items-center gap-2">
               Live Two-Layer Scanning Engine
               {isScanning && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               )}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Dual-verification: Google Maps filter & organic search aggregator exclusion
             </p>
           </div>
         </div>
 
         {/* Capped Counter Pill */}
-        <div className="flex items-center gap-3 bg-slate-950/80 px-4 py-2 rounded-xl border border-slate-800 self-start sm:self-auto">
+        <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-300 self-start sm:self-auto">
           <div className="text-right">
-            <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+            <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
               Verified / Limit
             </div>
-            <div className="text-lg font-bold font-mono text-white">
-              <span className="text-emerald-400">{qualifiedCount}</span>
-              <span className="text-slate-500 text-sm"> / {targetLimit}</span>
+            <div className="text-lg font-bold font-mono text-slate-900">
+              <span className="text-emerald-600">{qualifiedCount}</span>
+              <span className="text-slate-600 text-sm"> / {targetLimit}</span>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-full border-2 border-indigo-500/20 flex items-center justify-center relative">
-            <span className="text-xs font-mono font-bold text-indigo-400">{percentage}%</span>
+          <div className="w-12 h-12 rounded-full border-2 border-indigo-200 flex items-center justify-center relative">
+            <span className="text-xs font-mono font-bold text-indigo-600">{percentage}%</span>
           </div>
         </div>
       </div>
 
       {/* Progress Bar */}
       <div className="space-y-1.5">
-        <div className="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+        <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
           <div
             className="bg-gradient-to-r from-indigo-500 via-teal-400 to-emerald-400 h-full transition-all duration-300 ease-out rounded-full"
             style={{ width: `${percentage}%` }}
@@ -123,10 +123,10 @@ export default function LiveProgress({
       </div>
 
       {/* Live Activity Ticker */}
-      <div className="bg-slate-950/90 rounded-xl p-3.5 border border-slate-800/80 space-y-2">
-        <div className="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/60 pb-2">
-          <span className="flex items-center gap-1.5 font-mono text-slate-300">
-            <Terminal className="w-3.5 h-3.5 text-indigo-400" />
+      <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-300 space-y-2">
+        <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-300 pb-2">
+          <span className="flex items-center gap-1.5 font-mono text-slate-700">
+            <Terminal className="w-3.5 h-3.5 text-indigo-600" />
             Scanning Feed
           </span>
           {currentEvent && getStatusBadge(currentEvent.status)}
@@ -134,8 +134,8 @@ export default function LiveProgress({
 
         <div className="font-mono text-xs space-y-1">
           {currentEvent ? (
-            <div className="text-slate-300">
-              <span className="text-indigo-400 font-bold">&gt; [{currentEvent.candidate_name}]:</span>{" "}
+            <div className="text-slate-700">
+              <span className="text-indigo-600 font-bold">&gt; [{currentEvent.candidate_name}]:</span>{" "}
               <span>{currentEvent.reason}</span>
             </div>
           ) : (
@@ -147,11 +147,11 @@ export default function LiveProgress({
 
         {/* Collapsible/Scrollable recent log stream */}
         {logs.length > 1 && (
-          <div className="pt-2 border-t border-slate-800/60 max-h-24 overflow-y-auto space-y-1 text-[11px] font-mono text-slate-400">
+          <div className="pt-2 border-t border-slate-300 max-h-24 overflow-y-auto space-y-1 text-[11px] font-mono text-slate-500">
             {logs.slice(-5).reverse().map((log, i) => (
               <div key={i} className="truncate">
-                <span className="text-slate-600">[{log.candidate_name}]:</span>{" "}
-                <span className={log.status === "QUALIFIED" ? "text-emerald-400 font-semibold" : ""}>
+                <span className="text-slate-400">[{log.candidate_name}]:</span>{" "}
+                <span className={log.status === "QUALIFIED" ? "text-emerald-600 font-semibold" : ""}>
                   {log.reason}
                 </span>
               </div>
