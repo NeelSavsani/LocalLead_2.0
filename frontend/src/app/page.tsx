@@ -100,8 +100,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#090D16] text-slate-100 selection:bg-indigo-500 selection:text-white">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-[#090D16]/80 backdrop-blur-lg border-b border-slate-800/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-[#090D16]/90 backdrop-blur-lg border-b border-slate-800/80 w-full">
+        <div className="w-full px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <Radar className="w-5 h-5 text-white animate-subtle" />
@@ -148,8 +148,8 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Main Content Area - Full Width */}
+      <main className="flex-1 w-full px-4 sm:px-6 py-6 space-y-6">
         {/* Error Alert if any */}
         {errorMessage && (
           <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 px-4 py-3 rounded-xl text-xs flex items-center justify-between">
