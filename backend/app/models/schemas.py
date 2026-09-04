@@ -59,15 +59,48 @@ def clean_business_name(name: str) -> str:
     return re.sub(r'\s+', ' ', cleaned).strip()
 
 
+import unicodedata
+
+LISTICLE_KEYWORDS = [
+    "top ",
+    "best ",
+    "list of",
+    "cafes in",
+    "shops in",
+    "near me",
+    "10 best",
+    "restaurants in",
+    "garages in",
+    "bars in",
+    "pubs in",
+    "places in",
+    "guide to",
+]
+
+
+def is_listicle_title(name: str) -> bool:
+    if not name or len(name.strip()) < 2:
+        return True
+    norm = "".join(c for c in unicodedata.normalize('NFKD', name) if not unicodedata.combining(c)).lower()
+    norm = f" {norm.strip()} "
+    for kw in LISTICLE_KEYWORDS:
+        if kw in norm:
+            return True
+    return False
+
+
 def is_commercial_business(name: str) -> bool:
     """
-    Filters out non-commercial entities:
+    Filters out non-commercial entities and listicle/blog titles:
     Rejects names containing 'Villa', 'Apartment', 'Society', 'Bunglow',
     'Home' (unless commercial home decor/care/foods), 'Flat', 'Residency', etc.
+    Strictly discards listicles and aggregator headlines.
     """
     if not name or len(name.strip()) < 2:
         return False
     lower = name.lower()
+    if is_listicle_title(lower):
+        return False
     for pattern in NON_COMMERCIAL_PATTERNS:
         if re.search(pattern, lower):
             return False
@@ -101,6 +134,10 @@ class ScanRequest(BaseModel):
     use_mock: bool = Field(
         default=False,
         description="Whether to use offline testing data instead of live internet search"
+    )
+    require_phone: bool = Field(
+        default=True,
+        description="Discard candidates whose Google Maps place drawer has no callable phone number"
     )
 
     @model_validator(mode="before")
@@ -183,4 +220,3 @@ class StartScanResponse(BaseModel):
     message: str
     target_limit: int
     categories: List[str]
-

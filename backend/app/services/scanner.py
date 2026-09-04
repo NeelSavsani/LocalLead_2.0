@@ -11,7 +11,7 @@ from app.models.schemas import (
     ScanProgress,
     ScanRequest,
 )
-from app.services.places_service import fetch_places_candidates, construct_maps_url
+from app.services.places_service import fetch_places_candidates, construct_maps_url, is_direct_place_url, extract_indian_phone
 from app.services.search_verifier import verify_independent_website
 from app.services.excel_exporter import generate_leads_excel
 
@@ -91,7 +91,7 @@ class ScannerService:
             )
         )
 
-        candidates = fetch_places_candidates(
+        candidates = await fetch_places_candidates(
             location=location,
             categories=categories,
             limit=limit,
@@ -121,6 +121,23 @@ class ScannerService:
             name = candidate.get("name", "Unknown Shop")
             maps_website = candidate.get("maps_website")
             mock_links = candidate.get("search_links")
+
+            # A sales lead must be both callable and link to one specific place
+            # drawer.  Do this before web verification to avoid wasting searches.
+            phone = extract_indian_phone(candidate.get("phone"))
+            maps_url = candidate.get("maps_url") or construct_maps_url(
+                name=name,
+                place_id=candidate.get("place_id"),
+                cid=candidate.get("cid"),
+            )
+            if not is_direct_place_url(maps_url) or (job.request.require_phone and phone == "N/A"):
+                job.processed_count += 1
+                reason = "No direct Google Maps place link" if not is_direct_place_url(maps_url) else "No callable phone number in Google Maps place drawer"
+                await job.events_queue.put(ScanCandidateEvent(
+                    job_id=job.job_id, candidate_name=name, status="DISQUALIFIED_CONTACT",
+                    reason=reason, qualified_count=job.qualified_count, target_limit=limit,
+                ))
+                continue
 
             # Telemetry update
             await job.events_queue.put(
@@ -192,21 +209,13 @@ class ScannerService:
 
             # --- QUALIFIED LEAD: Passed both layers! ---
             cand_category = candidate.get("category") or categories[0]
-            maps_url = candidate.get("maps_url") or construct_maps_url(
-                name=name,
-                address=candidate.get("address"),
-                location=location,
-                place_id=candidate.get("place_id"),
-                cid=candidate.get("cid"),
-            )
-
             lead_id = f"LLP-{len(job.qualified_leads) + 1:03d}"
             try:
                 lead = LeadRecord(
                     id=lead_id,
                     name=name,
                     category=cand_category,
-                    phone=candidate.get("phone", "N/A"),
+                    phone=phone,
                     address=candidate.get("address", location),
                     area=candidate.get("area", location.split(",")[0].strip()),
                     maps_url=maps_url,

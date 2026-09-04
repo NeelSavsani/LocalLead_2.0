@@ -6,6 +6,7 @@ from app.services.search_verifier import (
     normalize_domain,
     verify_independent_website,
 )
+from app.services import places_service
 from app.services.places_service import fetch_places_candidates
 from app.services.scanner import ScannerService
 
@@ -66,18 +67,34 @@ def test_search_verifier_with_standalone_website_detected():
     assert "https://www.patelautospares.in" in result["standalone_urls"]
 
 
-def test_places_service_candidates_extraction():
-    candidates = fetch_places_candidates(
+@pytest.mark.asyncio
+async def test_places_service_candidates_extraction():
+    candidates = await fetch_places_candidates(
         location="Surat, Gujarat",
         categories=["Cafe", "Auto Garage"],
         limit=10,
+        use_mock=True,
     )
     assert len(candidates) >= 5
-    # Must contain candidates with real addresses and maps_url containing place query
+    # Candidates always have drawer-backed phones and direct place links.
     for c in candidates:
-        assert "google.com/maps" in c["maps_url"]
+        assert "cid=" in c["maps_url"] or "place_id:" in c["maps_url"] or "/maps/place/" in c["maps_url"]
+        assert c["phone"] != "N/A"
         assert "Surat" in c["address"] or "Surat" in c["maps_url"]
         assert c["category"] in ["Cafe", "Auto Garage"]
+
+
+@pytest.mark.asyncio
+async def test_gmaps_browser_uses_http_fallback_when_playwright_is_unavailable(monkeypatch):
+    async def fallback(location, category, max_items):
+        return [{"name": "Fallback Cafe", "category": category}]
+
+    monkeypatch.setattr(places_service, "HAS_PLAYWRIGHT", False)
+    monkeypatch.setattr(places_service, "_http_local_cards_fallback", fallback)
+
+    assert await places_service.fetch_from_gmaps_browser("Surat, Gujarat", "Cafe", 1) == [
+        {"name": "Fallback Cafe", "category": "Cafe"}
+    ]
 
 
 @pytest.mark.asyncio
@@ -87,6 +104,7 @@ async def test_scanner_strict_limit_enforcement_3():
         location="Surat, Gujarat",
         categories=["Cafe", "Auto Garage"],
         limit=3,
+        use_mock=True,
     )
     job = scanner.create_job(req)
     # Run scanner with zero artificial sleep delay for fast test execution
@@ -102,8 +120,8 @@ async def test_scanner_strict_limit_enforcement_3():
     for lead in job.qualified_leads:
         assert lead.has_maps_site is False
         assert lead.has_web_site is False
-        assert lead.verification_status == "No Standalone Website Found"
-        assert "https://www.google.com/maps/search/?api=1&query=" in lead.maps_url
+        assert "cid=" in lead.maps_url or "place_id:" in lead.maps_url or "/maps/place/" in lead.maps_url
+        assert lead.phone != "N/A"
 
 
 @pytest.mark.asyncio
@@ -113,6 +131,7 @@ async def test_scanner_strict_limit_enforcement_multi_category():
         location="Surat, Gujarat",
         categories=["Cafe", "Garage"],
         limit=5,
+        use_mock=True,
     )
     job = scanner.create_job(req)
     await scanner.run_scan(job, delay_seconds=0.0)
@@ -124,3 +143,57 @@ async def test_scanner_strict_limit_enforcement_multi_category():
     # Verify categories are represented
     found_categories = {l.category for l in job.qualified_leads}
     assert len(found_categories) >= 1
+
+
+def test_listicle_rejection():
+    from app.services.places_service import is_listicle_title
+    from app.models.schemas import is_commercial_business
+
+    listicles = [
+        "Top 10 Cafes in Junagadh",
+        "The Best Cafes in Junagadh",
+        "Best Coffee Shops in Junagadh",
+        "List of Cafes in Gujarat",
+        "Top Coffee Shops in Junagadh",
+        "Garages in Ahmedabad",
+        "Restaurants in Surat",
+        "Cafes near me",
+        "10 best restaurants in town",
+    ]
+    for title in listicles:
+        assert is_listicle_title(title) is True
+        assert is_commercial_business(title) is False
+
+    real_businesses = [
+        "Gigil Cafe",
+        "Hideout Cafe & Food",
+        "AROMA CAFE",
+        "Tea Post",
+        "One Step Up Cafe",
+        "Signature Restro & Cafe",
+        "Maruti Car Care",
+    ]
+    for name in real_businesses:
+        assert is_listicle_title(name) is False
+        assert is_commercial_business(name) is True
+
+
+def test_indian_phone_extraction():
+    from app.services.places_service import extract_indian_phone
+
+    assert extract_indian_phone("Phone: 085305 26269") in ["085305 26269", "08530526269"]
+    assert extract_indian_phone("+91 98765 43210") in ["+91 98765 43210", "+919876543210"]
+    assert extract_indian_phone("Call us at 06352092843 now") == "06352092843"
+    assert extract_indian_phone("0285-2621234") == "0285-2621234"
+    assert extract_indian_phone("No contact number available") == "N/A"
+    assert extract_indian_phone(None) == "N/A"
+
+
+def test_construct_direct_maps_url():
+    from app.services.places_service import construct_maps_url
+
+    direct = "https://www.google.com/maps/place/Hideout+Cafe+%26+Food/@21.513343,70.461691,17z/data=!3m1!4b1"
+    assert construct_maps_url("Hideout Cafe & Food", direct_url=direct) == direct
+
+    cid_url = construct_maps_url("Hideout Cafe & Food", cid="1312367468165039661")
+    assert cid_url == "https://maps.google.com/?cid=1312367468165039661"

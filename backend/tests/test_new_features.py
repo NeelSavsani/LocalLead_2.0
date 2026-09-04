@@ -41,15 +41,14 @@ def test_construct_maps_url_deep_links():
     url_cid = construct_maps_url("The Project Cafe", cid="13198889410145898462")
     assert url_cid == "https://maps.google.com/?cid=13198889410145898462"
 
-    # 3. Query URL with exact business name + specific address + location
+    # 3. Never manufacture a generic search URL: it would open a result list,
+    # not this business's place drawer.
     url_query = construct_maps_url(
         name="Janata Garage",
         address="Near Ring Road, Ambawadi",
         location="Ahmedabad, Gujarat",
     )
-    assert "https://www.google.com/maps/search/?api=1&query=" in url_query
-    assert "Janata+Garage" in url_query
-    assert "Ahmedabad" in url_query
+    assert url_query == ""
 
 
 def test_extract_indian_phone():

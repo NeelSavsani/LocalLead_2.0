@@ -200,21 +200,17 @@ def verify_independent_website(
     # Priority 2: Google Custom Search API if keys are provided
     elif api_key and search_engine_id:
         try:
-            query = f'"{business_name}" "{location}"'
             cse_url = "https://www.googleapis.com/customsearch/v1"
-            params = {
-                "key": api_key,
-                "cx": search_engine_id,
-                "q": query,
-                "num": 5,
-            }
-            res = requests.get(cse_url, params=params, timeout=4.0)
-            if res.status_code == 200:
-                data = res.json()
-                for item in data.get("items", []):
-                    link = item.get("link")
-                    if link:
-                        all_candidate_urls.append(link)
+            # Keep both queries clean: street and landmark fragments bury a
+            # chain's official domain under local directory results.
+            for query in (f'"{business_name}"', f'"{business_name}" "{location}"'):
+                params = {"key": api_key, "cx": search_engine_id, "q": query, "num": 5}
+                res = requests.get(cse_url, params=params, timeout=4.0)
+                if res.status_code == 200:
+                    for item in res.json().get("items", []):
+                        link = item.get("link")
+                        if link and link not in all_candidate_urls:
+                            all_candidate_urls.append(link)
         except Exception:
             all_candidate_urls = []
 
@@ -222,8 +218,12 @@ def verify_independent_website(
     if not all_candidate_urls and mock_urls is None:
         clean_name = re.sub(r"[^\w\s]", "", business_name).strip()
         clean_loc = re.sub(r"[^\w\s]", "", location.split(",")[0]).strip()
-        query = f"{clean_name} {clean_loc}"
-        all_candidate_urls = query_live_search(query, max_results=5)
+        # Search both the brand alone and the brand plus city; this catches chain
+        # homepages (for example cafecoffeeday.com) without address noise.
+        all_candidate_urls = query_live_search(f'"{clean_name}"', max_results=5)
+        if clean_loc:
+            all_candidate_urls.extend(query_live_search(f'"{clean_name}" "{clean_loc}"', max_results=5))
+        all_candidate_urls = list(dict.fromkeys(all_candidate_urls))
 
     if mock_urls is None:
         for url in all_candidate_urls:

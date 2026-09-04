@@ -35,6 +35,7 @@ def test_start_scan_and_get_results():
         "location": "Surat, Gujarat",
         "categories": ["Cafe"],
         "limit": 2,
+        "use_mock": True,
     }
     # 1. Start scan (TestClient executes background_tasks before returning)
     start_res = client.post("/api/leads/start", json=payload)
@@ -59,7 +60,8 @@ def test_start_scan_and_get_results():
     assert len(results_data["leads"]) == 2
     for lead in results_data["leads"]:
         assert lead["category"] == "Cafe"
-        assert "maps/search/?api=1" in lead["maps_url"]
+        assert "cid=" in lead["maps_url"] or "place_id:" in lead["maps_url"] or "/maps/place/" in lead["maps_url"]
+        assert lead["phone"] != "N/A"
 
     # 4. Download Excel workbook endpoint
     dl_res = client.get(f"/api/leads/download/{job_id}")
