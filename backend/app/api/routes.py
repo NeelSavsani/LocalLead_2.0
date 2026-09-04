@@ -36,6 +36,27 @@ async def start_scan(request: ScanRequest, background_tasks: BackgroundTasks):
     )
 
 
+@router.post("/stop/{job_id}")
+async def stop_scan(job_id: str):
+    """
+    Halts an in-progress scan, sets job.is_cancelled = True,
+    and preserves all qualified leads collected up to that point.
+    """
+    job = scanner_service.get_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Scan job '{job_id}' not found.",
+        )
+    job.is_cancelled = True
+    return {
+        "job_id": job.job_id,
+        "status": "STOPPED",
+        "message": "Scan cancellation requested.",
+        "qualified_count": job.qualified_count,
+    }
+
+
 @router.get("/stream/{job_id}")
 async def stream_scan_progress(job_id: str):
     """
@@ -43,7 +64,7 @@ async def stream_scan_progress(job_id: str):
     - Layer 1 Google Maps check events
     - Layer 2 Organic search & directory exclusion checks
     - Instant qualified lead announcements
-    - Completion signal when target limit is reached
+    - Stop and completion signals
     """
     job = scanner_service.get_job(job_id)
     if not job:
@@ -53,13 +74,14 @@ async def stream_scan_progress(job_id: str):
         )
 
     async def event_generator() -> AsyncGenerator[str, None]:
-        # If job has already completed before connection, yield current state and finish
+        # If job has already completed or stopped before connection, yield current state and finish
         if job.is_completed:
+            evt_type = "scan_stopped" if job.status == "STOPPED" else "completed"
             complete_data = {
-                "event": "completed",
+                "event": evt_type,
                 "job_id": job.job_id,
-                "status": "COMPLETED",
-                "reason": f"Job already completed with {job.qualified_count} leads.",
+                "status": job.status,
+                "reason": f"Job {job.status.lower()} with {job.qualified_count} leads.",
                 "qualified_count": job.qualified_count,
                 "target_limit": job.request.limit,
             }
@@ -73,9 +95,10 @@ async def stream_scan_progress(job_id: str):
                 if event is None:
                     # Sentinel signifying scan termination
                     break
-                
+
+                event_type = "scan_stopped" if event.status == "STOPPED" else "candidate_evaluated"
                 payload = {
-                    "event": "candidate_evaluated",
+                    "event": event_type,
                     "job_id": event.job_id,
                     "candidate_name": event.candidate_name,
                     "status": event.status,
@@ -86,7 +109,7 @@ async def stream_scan_progress(job_id: str):
                 }
                 yield f"data: {json.dumps(payload)}\n\n"
 
-                if event.status == "COMPLETED":
+                if event.status in ["COMPLETED", "STOPPED"]:
                     break
             except asyncio.TimeoutError:
                 # Keep-alive heartbeat ping

@@ -58,6 +58,13 @@ export default function LiveProgress({
             Scan Finished
           </span>
         );
+      case "STOPPED":
+        return (
+          <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 font-medium">
+            <XCircle className="w-3 h-3" />
+            Scan Stopped
+          </span>
+        );
       default:
         return null;
     }

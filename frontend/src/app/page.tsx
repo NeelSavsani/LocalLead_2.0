@@ -21,6 +21,7 @@ import {
   ScanRequest,
   createEventSourceStream,
   startScan,
+  stopScan,
 } from "@/lib/api";
 
 export default function DashboardPage() {
@@ -34,6 +35,21 @@ export default function DashboardPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const eventSourceRef = useRef<EventSource | null>(null);
+
+  const handleStopScan = async () => {
+    if (currentJobId) {
+      try {
+        await stopScan(currentJobId);
+      } catch (err) {
+        console.warn("Error requesting stop scan:", err);
+      }
+    }
+    setIsScanning(false);
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  };
 
   const handleStartScan = async (req: ScanRequest) => {
     setErrorMessage(null);
@@ -71,8 +87,13 @@ export default function DashboardPage() {
             });
           }
 
-          // Terminate scan if finished or target limit reached
-          if (event.status === "COMPLETED" || event.qualified_count >= req.limit) {
+          // Terminate scan if finished, stopped, or target limit reached
+          if (
+            event.status === "COMPLETED" ||
+            event.status === "STOPPED" ||
+            event.event === "scan_stopped" ||
+            event.qualified_count >= req.limit
+          ) {
             setIsScanning(false);
             if (eventSourceRef.current) {
               eventSourceRef.current.close();
@@ -167,7 +188,11 @@ export default function DashboardPage() {
           <>
             {/* Lead Search Input Console */}
             <section>
-              <LeadSearchForm onStartScan={handleStartScan} isScanning={isScanning} />
+              <LeadSearchForm
+                onStartScan={handleStartScan}
+                onStopScan={handleStopScan}
+                isScanning={isScanning}
+              />
             </section>
 
             {/* Live Progress & Candidate Telemetry */}

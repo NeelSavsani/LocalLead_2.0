@@ -11,7 +11,7 @@ from app.models.schemas import (
     ScanProgress,
     ScanRequest,
 )
-from app.services.places_service import fetch_places_candidates
+from app.services.places_service import fetch_places_candidates, construct_maps_url
 from app.services.search_verifier import verify_independent_website
 from app.services.excel_exporter import generate_leads_excel
 
@@ -25,6 +25,7 @@ class ScanJob:
         self.qualified_leads: List[LeadRecord] = []
         self.events_queue: asyncio.Queue = asyncio.Queue()
         self.is_completed: bool = False
+        self.is_cancelled: bool = False
         self.created_at: str = datetime.now().isoformat()
         self.excel_path: Optional[str] = None
 
@@ -57,12 +58,19 @@ class ScannerService:
         self.jobs[job.job_id] = job
         return job
 
+    def stop_job(self, job_id: str) -> bool:
+        job = self.get_job(job_id)
+        if job:
+            job.is_cancelled = True
+            return True
+        return False
+
     async def run_scan(self, job: ScanJob, delay_seconds: float = 0.05) -> None:
         """
         Orchestration loop:
         1. Queries candidate businesses from Google Places / local dataset.
         2. Evaluates each candidate through Layer 1 (Google Maps) and Layer 2 (Search Aggregators).
-        3. Strictly halts the moment qualified_count reaches request.limit.
+        3. Strictly halts the moment qualified_count reaches request.limit or job.is_cancelled is True.
         """
         job.status = "RUNNING"
         limit = job.request.limit
@@ -92,6 +100,20 @@ class ScannerService:
         )
 
         for candidate in candidates:
+            # STOP SCAN CHECK
+            if job.is_cancelled:
+                await job.events_queue.put(
+                    ScanCandidateEvent(
+                        job_id=job.job_id,
+                        candidate_name="System",
+                        status="STOPPED",
+                        reason=f"Scan stopped by user. Preserving {job.qualified_count} verified leads.",
+                        qualified_count=job.qualified_count,
+                        target_limit=limit,
+                    )
+                )
+                break
+
             # STRICT LIMIT ENFORCEMENT
             if job.qualified_count >= limit:
                 break
@@ -115,6 +137,7 @@ class ScannerService:
                 await asyncio.sleep(delay_seconds)
 
             # --- LAYER 1 VERIFICATION: Google Maps Website Check ---
+            # If Google Maps listing has an active Website button or link away from Google, disqualify immediately
             if maps_website:
                 job.processed_count += 1
                 await job.events_queue.put(
@@ -169,27 +192,33 @@ class ScannerService:
 
             # --- QUALIFIED LEAD: Passed both layers! ---
             cand_category = candidate.get("category") or categories[0]
-            # Exact Google Maps place search query per user specification
-            maps_url = candidate.get("maps_url") or (
-                f"https://www.google.com/maps/search/?api=1&query="
-                f"{urllib.parse.quote_plus(name)}+{urllib.parse.quote_plus(location)}"
+            maps_url = candidate.get("maps_url") or construct_maps_url(
+                name=name,
+                address=candidate.get("address"),
+                location=location,
+                place_id=candidate.get("place_id"),
+                cid=candidate.get("cid"),
             )
 
             lead_id = f"LLP-{len(job.qualified_leads) + 1:03d}"
-            lead = LeadRecord(
-                id=lead_id,
-                name=name,
-                category=cand_category,
-                phone=candidate.get("phone", "N/A"),
-                address=candidate.get("address", location),
-                area=candidate.get("area", location.split(",")[0].strip()),
-                maps_url=maps_url,
-                has_maps_site=False,
-                has_web_site=False,
-                verification_status="No Standalone Website Found",
-                call_status="Pending Call",
-                pitch_angle=candidate.get("pitch_angle", f"Direct website & online ordering portal for {cand_category}"),
-            )
+            try:
+                lead = LeadRecord(
+                    id=lead_id,
+                    name=name,
+                    category=cand_category,
+                    phone=candidate.get("phone", "N/A"),
+                    address=candidate.get("address", location),
+                    area=candidate.get("area", location.split(",")[0].strip()),
+                    maps_url=maps_url,
+                    has_maps_site=False,
+                    has_web_site=False,
+                    verification_status="No Standalone Website Found",
+                    call_status="Pending Call",
+                    pitch_angle=candidate.get("pitch_angle", f"Direct website & online ordering portal for {cand_category}"),
+                )
+            except Exception:
+                # Discard invalid/residential entities rejected by validator
+                continue
 
             job.qualified_leads.append(lead)
 
@@ -206,32 +235,37 @@ class ScannerService:
             )
 
             # Check again after incrementing
-            if job.qualified_count >= limit:
+            if job.qualified_count >= limit or job.is_cancelled:
                 break
 
-        # Finalize job and generate styled Excel workbook
-        job.status = "COMPLETED"
+        # Finalize job status and generate styled Excel workbook preserving leads
+        if job.is_cancelled:
+            job.status = "STOPPED"
+        else:
+            job.status = "COMPLETED"
         job.is_completed = True
+
         try:
             job.excel_path = generate_leads_excel(
                 job_id=job.job_id,
                 location=location,
                 leads=job.qualified_leads,
             )
-        except Exception as err:
+        except Exception:
             job.excel_path = None
 
-        # Signal termination to SSE consumers
-        await job.events_queue.put(
-            ScanCandidateEvent(
-                job_id=job.job_id,
-                candidate_name="System",
-                status="COMPLETED",
-                reason=f"Scan completed! Collected {job.qualified_count} verified leads matching limit {limit}.",
-                qualified_count=job.qualified_count,
-                target_limit=limit,
+        # Signal completion or stop to SSE consumers
+        if not job.is_cancelled:
+            await job.events_queue.put(
+                ScanCandidateEvent(
+                    job_id=job.job_id,
+                    candidate_name="System",
+                    status="COMPLETED",
+                    reason=f"Scan completed! Collected {job.qualified_count} verified leads matching limit {limit}.",
+                    qualified_count=job.qualified_count,
+                    target_limit=limit,
+                )
             )
-        )
         await job.events_queue.put(None)  # Sentinel for generator exhaustion
 
 

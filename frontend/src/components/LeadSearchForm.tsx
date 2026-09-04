@@ -11,11 +11,13 @@ import {
   X,
   Plus,
   Check,
+  Square,
 } from "lucide-react";
 import { ScanRequest } from "@/lib/api";
 
 interface LeadSearchFormProps {
   onStartScan: (req: ScanRequest) => void;
+  onStopScan?: () => void;
   isScanning: boolean;
 }
 
@@ -40,7 +42,7 @@ const LOCATION_PRESETS = [
 
 const LIMIT_PRESETS = [5, 10, 20, 50];
 
-export default function LeadSearchForm({ onStartScan, isScanning }: LeadSearchFormProps) {
+export default function LeadSearchForm({ onStartScan, onStopScan, isScanning }: LeadSearchFormProps) {
   const [location, setLocation] = useState("Surat, Gujarat");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["Cafe", "Garage"]);
   const [customCategoryInput, setCustomCategoryInput] = useState("");
@@ -268,23 +270,25 @@ export default function LeadSearchForm({ onStartScan, isScanning }: LeadSearchFo
 
           {/* Action CTA */}
           <div className="pt-4 flex flex-col gap-3">
-            <button
-              type="submit"
-              disabled={isScanning || selectedCategories.length === 0}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-medium py-3.5 px-6 rounded-xl shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isScanning ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Verifying Real Businesses...</span>
-                </>
-              ) : (
-                <>
-                  <Zap className="w-4 h-4 fill-current" />
-                  <span>Start Live Scan ({selectedCategories.length} Categories, Cap: {limit})</span>
-                </>
-              )}
-            </button>
+            {isScanning ? (
+              <button
+                type="button"
+                onClick={onStopScan}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-semibold py-3.5 px-6 rounded-xl shadow-lg shadow-rose-500/25 transition-all cursor-pointer animate-pulse"
+              >
+                <Square className="w-4 h-4 fill-current" />
+                <span>Stop Scan</span>
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={selectedCategories.length === 0}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-medium py-3.5 px-6 rounded-xl shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Zap className="w-4 h-4 fill-current" />
+                <span>Start Live Scan ({selectedCategories.length} Categories, Cap: {limit})</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
