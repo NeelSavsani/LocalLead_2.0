@@ -12,6 +12,8 @@ export interface LeadRecord {
   phone: string;
   address: string;
   area?: string;
+  latitude?: number;
+  longitude?: number;
   maps_url?: string;
   has_maps_site: boolean;
   has_web_site: boolean;

@@ -165,6 +165,8 @@ class LeadRecord(BaseModel):
     phone: Optional[str] = "N/A"
     address: str
     area: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     maps_url: Optional[str] = None
     has_maps_site: bool = False
     has_web_site: bool = False

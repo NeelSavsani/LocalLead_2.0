@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import dynamic from "next/dynamic";
 import {
   Radar,
   Sparkles,
@@ -14,6 +15,9 @@ import LeadSearchForm from "@/components/LeadSearchForm";
 import LiveProgress from "@/components/LiveProgress";
 import LeadTable from "@/components/LeadTable";
 import ExportButton from "@/components/ExportButton";
+
+const LeadMapView = dynamic(() => import("@/components/LeadMapView"), { ssr: false });
+
 import {
   LeadRecord,
   ScanCandidateEvent,
@@ -25,6 +29,7 @@ import {
 
 export default function DashboardPage() {
   const [isScanning, setIsScanning] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "map">("table");
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [targetLimit, setTargetLimit] = useState(20);
@@ -187,21 +192,43 @@ export default function DashboardPage() {
           </section>
         )}
 
-        {/* Excel Download Action Bar */}
+        {/* Excel Download Action Bar & View Toggle */}
         {leads.length > 0 && (
-          <section>
-            <ExportButton
-              jobId={currentJobId}
-              leadsCount={leads.length}
-              isScanning={isScanning}
-            />
+          <section className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <ExportButton
+                jobId={currentJobId}
+                leadsCount={leads.length}
+                isScanning={isScanning}
+              />
+              <div className="flex bg-slate-200/50 p-1 rounded-lg">
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                    viewMode === "table" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  List View
+                </button>
+                <button
+                  onClick={() => setViewMode("map")}
+                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                    viewMode === "map" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  Map View
+                </button>
+              </div>
+            </div>
+
+            {/* Content Area */}
+            {viewMode === "table" ? (
+              <LeadTable leads={leads} isScanning={isScanning} />
+            ) : (
+              <LeadMapView leads={leads} />
+            )}
           </section>
         )}
-
-        {/* Leads Table */}
-        <section>
-          <LeadTable leads={leads} isScanning={isScanning} />
-        </section>
       </main>
 
       {/* Footer */}

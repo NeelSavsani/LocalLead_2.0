@@ -170,6 +170,15 @@ def is_direct_place_url(url: Optional[str]) -> bool:
     )
 
 
+def extract_coordinates_from_url(url: Optional[str]) -> tuple[Optional[float], Optional[float]]:
+    if not url:
+        return None, None
+    m = re.search(r'@(-?\d+\.\d+),(-?\d+\.\d+)', url)
+    if m:
+        return float(m.group(1)), float(m.group(2))
+    return None, None
+
+
 def extract_drawer_phone(page) -> str:
     """Extract a phone from an already-open Google Maps place drawer."""
     selectors = (
@@ -526,9 +535,11 @@ async def _http_local_cards_fallback(location: str, category: str, max_items: in
         maps_url = construct_maps_url(name, place_id=place_id, cid=cid, direct_url=href)
         if not name or phone == "N/A" or not is_direct_place_url(maps_url):
             continue
+        lat, lon = extract_coordinates_from_url(href)
         candidates.append({
             "name": name, "category": category, "phone": phone,
             "address": f"{name}, {location}", "area": location.split(",")[0].strip(),
+            "latitude": lat, "longitude": lon,
             "maps_url": maps_url, "maps_website": None, "pitch_angle": get_pitch_angle(category),
         })
         if len(candidates) >= max_items:
@@ -591,9 +602,10 @@ async def fetch_from_gmaps_browser(location: str, category: str, max_items: int 
                     maps_url = construct_maps_url(name, direct_url=direct_url)
                     if phone == "N/A" or not is_direct_place_url(maps_url):
                         continue
+                    lat, lon = extract_coordinates_from_url(direct_url)
                     candidates.append({
                         "name": name, "category": category, "phone": phone, "address": address,
-                        "area": location.split(",")[0].strip(), "maps_url": maps_url,
+                        "area": location.split(",")[0].strip(), "latitude": lat, "longitude": lon, "maps_url": maps_url,
                         "maps_website": maps_website, "pitch_angle": get_pitch_angle(category),
                     })
                 except Exception as exc:
@@ -681,12 +693,20 @@ def fetch_from_nominatim(location: str, category: str, max_items: int = 15) -> L
 
                     website = extratags.get("website") or extratags.get("contact:website")
 
+                    try:
+                        lat = float(item.get("lat")) if item.get("lat") else None
+                        lon = float(item.get("lon")) if item.get("lon") else None
+                    except (ValueError, TypeError):
+                        lat, lon = None, None
+
                     candidates.append({
                         "name": name_clean,
                         "category": category,
                         "phone": phone,
                         "address": display_name,
                         "area": area,
+                        "latitude": lat,
+                        "longitude": lon,
                         "maps_url": maps_url,
                         "maps_website": website,
                         "pitch_angle": get_pitch_angle(category),
@@ -752,6 +772,8 @@ def fetch_from_live_search(location: str, category: str, max_items: int = 10) ->
                 "phone": phone,
                 "address": f"{name}, {location}",
                 "area": area,
+                "latitude": None,
+                "longitude": None,
                 "maps_url": maps_url,
                 "maps_website": maps_website,
                 "pitch_angle": get_pitch_angle(category),
@@ -800,6 +822,8 @@ async def fetch_places_candidates(
                     "phone": f"+91 98765 {43000 + index:05d}",
                     "address": f"{index} Market Road, {area}",
                     "area": area,
+                    "latitude": 21.1702 + (index * 0.01),
+                    "longitude": 72.8311 + (index * 0.01),
                     "maps_url": construct_maps_url(name, cid=cid),
                     "cid": cid,
                     "maps_website": None,
@@ -836,6 +860,11 @@ async def fetch_places_candidates(
                         addr = p.get("formattedAddress", location)
                         phone = extract_indian_phone(p.get("nationalPhoneNumber"))
                         direct_url = p.get("googleMapsUri")
+
+                        loc = p.get("location", {})
+                        lat = loc.get("latitude")
+                        lon = loc.get("longitude")
+
                         maps_url = construct_maps_url(
                             name=clean_n,
                             address=addr,
@@ -849,6 +878,8 @@ async def fetch_places_candidates(
                             "phone": phone,
                             "address": addr,
                             "area": location.split(",")[0].strip(),
+                            "latitude": lat,
+                            "longitude": lon,
                             "maps_website": p.get("websiteUri"),
                             "maps_url": maps_url,
                             "place_id": place_id,
