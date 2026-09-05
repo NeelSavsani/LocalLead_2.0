@@ -14,7 +14,6 @@ import LeadSearchForm from "@/components/LeadSearchForm";
 import LiveProgress from "@/components/LiveProgress";
 import LeadTable from "@/components/LeadTable";
 import ExportButton from "@/components/ExportButton";
-import ColdCallingPlaybook from "@/components/ColdCallingPlaybook";
 import {
   LeadRecord,
   ScanCandidateEvent,
@@ -25,7 +24,6 @@ import {
 } from "@/lib/api";
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "playbook">("dashboard");
   const [isScanning, setIsScanning] = useState(false);
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
@@ -143,27 +141,10 @@ export default function DashboardPage() {
           {/* Navigation Tabs */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                activeTab === "dashboard"
-                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-              }`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-emerald-50 text-emerald-700 border border-emerald-200"
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
               <span>Lead Scanner</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("playbook")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                activeTab === "playbook"
-                  ? "bg-amber-50 text-amber-700 border border-amber-200"
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-              }`}
-            >
-              <PhoneCall className="w-3.5 h-3.5" />
-              <span>Cold Call Scripts</span>
             </button>
           </div>
         </div>
@@ -184,52 +165,43 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {activeTab === "dashboard" ? (
-          <>
-            {/* Lead Search Input Console */}
-            <section>
-              <LeadSearchForm
-                onStartScan={handleStartScan}
-                onStopScan={handleStopScan}
-                isScanning={isScanning}
-              />
-            </section>
+        {/* Lead Search Input Console */}
+        <section>
+          <LeadSearchForm
+            onStartScan={handleStartScan}
+            onStopScan={handleStopScan}
+            isScanning={isScanning}
+          />
+        </section>
 
-            {/* Live Progress & Candidate Telemetry */}
-            {(isScanning || logs.length > 0) && (
-              <section>
-                <LiveProgress
-                  currentEvent={currentEvent}
-                  qualifiedCount={leads.length}
-                  targetLimit={targetLimit}
-                  isScanning={isScanning}
-                  logs={logs}
-                />
-              </section>
-            )}
-
-            {/* Excel Download Action Bar */}
-            {leads.length > 0 && (
-              <section>
-                <ExportButton
-                  jobId={currentJobId}
-                  leadsCount={leads.length}
-                  isScanning={isScanning}
-                />
-              </section>
-            )}
-
-            {/* Leads Table */}
-            <section>
-              <LeadTable leads={leads} isScanning={isScanning} />
-            </section>
-          </>
-        ) : (
-          /* Cold Calling & Pitch Playbook Section */
+        {/* Live Progress & Candidate Telemetry */}
+        {(isScanning || logs.length > 0) && (
           <section>
-            <ColdCallingPlaybook />
+            <LiveProgress
+              currentEvent={currentEvent}
+              qualifiedCount={leads.length}
+              targetLimit={targetLimit}
+              isScanning={isScanning}
+              logs={logs}
+            />
           </section>
         )}
+
+        {/* Excel Download Action Bar */}
+        {leads.length > 0 && (
+          <section>
+            <ExportButton
+              jobId={currentJobId}
+              leadsCount={leads.length}
+              isScanning={isScanning}
+            />
+          </section>
+        )}
+
+        {/* Leads Table */}
+        <section>
+          <LeadTable leads={leads} isScanning={isScanning} />
+        </section>
       </main>
 
       {/* Footer */}
