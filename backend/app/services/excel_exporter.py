@@ -1,12 +1,12 @@
 import os
 from datetime import datetime
-from typing import List
+from typing import List, Optional, Sequence, Union
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
-from app.models.schemas import LeadRecord
+from app.models.schemas import LeadRecord, SheetLeadRecord, normalize_call_status
 from app.config import settings
 
 CALL_STATUS_OPTIONS = [
@@ -17,7 +17,12 @@ CALL_STATUS_OPTIONS = [
     "Other",
 ]
 
-def generate_leads_excel(leads: List[LeadRecord], location: str, job_id: str) -> str:
+def generate_leads_excel(
+    leads: Sequence[Union[LeadRecord, SheetLeadRecord]],
+    location: str,
+    job_id: str,
+    output_dir: Optional[str] = None,
+) -> str:
     wb = Workbook()
     ws = wb.active
 
@@ -106,8 +111,8 @@ def generate_leads_excel(leads: List[LeadRecord], location: str, job_id: str) ->
             (lead.address, left_align, None),
             (lead.area or location, center_align, None),
             ("Open Google Map", center_align, link_font),  # Clean text label
-            ("No Standalone Website Found", center_align, None),
-            ("Pending", center_align, None),            # Default dropdown choice
+            (lead.verification_status or "No Standalone Website Found", center_align, None),
+            (normalize_call_status(lead.call_status), center_align, None),
             (lead.date_identified, center_align, None),
         ]
 
@@ -156,7 +161,7 @@ def generate_leads_excel(leads: List[LeadRecord], location: str, job_id: str) ->
 
     ws.freeze_panes = "A5"
 
-    export_dir = settings.EXPORTS_DIR
+    export_dir = output_dir or settings.EXPORTS_DIR
     os.makedirs(export_dir, exist_ok=True)
     file_path = os.path.join(export_dir, f"leads_{job_id}.xlsx")
     wb.save(file_path)

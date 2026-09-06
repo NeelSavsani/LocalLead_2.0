@@ -6,7 +6,7 @@ if sys.platform == "win32":
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import router as leads_router
+from app.api.routes import router as leads_router, sheet_router
 from app.config import settings
 
 app = FastAPI(
@@ -26,6 +26,7 @@ app.add_middleware(
 
 # Register routes
 app.include_router(leads_router)
+app.include_router(sheet_router)
 
 
 @app.get("/")

@@ -195,6 +195,79 @@ class LeadRecord(BaseModel):
         return v.strip()
 
 
+CALL_STATUS_VALUES = (
+    "Pending",
+    "Interested",
+    "Not Interested",
+    "Not Reachable",
+    "Other",
+)
+
+
+def normalize_call_status(value: Optional[str]) -> str:
+    if not value or not str(value).strip():
+        return "Pending"
+    raw = str(value).strip()
+    if raw.lower() in ("pending call", "pending"):
+        return "Pending"
+    for option in CALL_STATUS_VALUES:
+        if option.lower() == raw.lower():
+            return option
+    return raw
+
+
+class SheetLeadRecord(BaseModel):
+    """Persisted sheet row matching the Excel export schema."""
+
+    id: str
+    name: str
+    category: str
+    phone: Optional[str] = "N/A"
+    address: str
+    area: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    maps_url: Optional[str] = None
+    has_maps_site: bool = False
+    has_web_site: bool = False
+    verification_status: str = "No Standalone Website Found"
+    call_status: str = "Pending"
+    notes: str = ""
+    date_identified: str = Field(
+        default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M")
+    )
+    updated_at: Optional[str] = None
+
+    @field_validator("call_status")
+    @classmethod
+    def validate_call_status(cls, v: str) -> str:
+        return normalize_call_status(v)
+
+
+class AddToSheetResponse(BaseModel):
+    added_count: int
+    skipped_duplicates: int
+    total_leads: int
+
+
+class SheetListResponse(BaseModel):
+    leads: List[SheetLeadRecord]
+    total_leads: int
+    categories: List[str] = Field(default_factory=list)
+
+
+class SheetUpdateRequest(BaseModel):
+    call_status: Optional[str] = None
+    notes: Optional[str] = None
+
+    @field_validator("call_status")
+    @classmethod
+    def validate_optional_call_status(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        return normalize_call_status(v)
+
+
 class ScanCandidateEvent(BaseModel):
     job_id: str
     candidate_name: str

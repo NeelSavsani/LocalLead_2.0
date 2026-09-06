@@ -1,26 +1,48 @@
 "use client";
 
-import React from "react";
-import { FileSpreadsheet, Download, CheckCircle } from "lucide-react";
-import { getExcelDownloadUrl } from "@/lib/api";
+import React, { useState } from "react";
+import { FileSpreadsheet, Download, Plus, Loader2 } from "lucide-react";
+import { addLeadsToSheet, getExcelDownloadUrl, LeadRecord, AddToSheetResponse } from "@/lib/api";
 
 interface ExportButtonProps {
   jobId: string | null;
+  leads: LeadRecord[];
   leadsCount: number;
   isScanning: boolean;
+  onAddedToSheet?: (result: AddToSheetResponse) => void;
+  onAddError?: (message: string) => void;
 }
 
-export default function ExportButton({ jobId, leadsCount, isScanning }: ExportButtonProps) {
+export default function ExportButton({
+  jobId,
+  leads,
+  leadsCount,
+  onAddedToSheet,
+  onAddError,
+}: ExportButtonProps) {
   const canDownload = Boolean(jobId && leadsCount > 0);
+  const [adding, setAdding] = useState(false);
 
   const handleDownload = () => {
     if (!jobId) return;
-    const url = getExcelDownloadUrl(jobId);
-    window.open(url, "_blank");
+    window.open(getExcelDownloadUrl(jobId), "_blank");
+  };
+
+  const handleAddToSheet = async () => {
+    if (!leads.length || adding) return;
+    setAdding(true);
+    try {
+      const result = await addLeadsToSheet(leads);
+      onAddedToSheet?.(result);
+    } catch (err: any) {
+      onAddError?.(err.message || "Failed to add leads to sheet");
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-white to-emerald-50/50 p-5 rounded-2xl border border-slate-200 shadow-xl">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-white to-emerald-50/50 p-5 rounded-2xl border border-slate-200 shadow-xl w-full">
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
           <FileSpreadsheet className="w-6 h-6" />
@@ -38,14 +60,24 @@ export default function ExportButton({ jobId, leadsCount, isScanning }: ExportBu
         </div>
       </div>
 
-      <button
-        onClick={handleDownload}
-        disabled={!canDownload}
-        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-medium py-3 px-6 rounded-xl shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
-      >
-        <Download className="w-4 h-4" />
-        <span>Download Excel Sheet ({leadsCount} Leads)</span>
-      </button>
+      <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
+        <button
+          onClick={handleAddToSheet}
+          disabled={!leadsCount || adding}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-slate-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+        >
+          {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+          <span>+ Add to Sheet ({leadsCount})</span>
+        </button>
+        <button
+          onClick={handleDownload}
+          disabled={!canDownload}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-medium py-3 px-6 rounded-xl shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+        >
+          <Download className="w-4 h-4" />
+          <span>Download Excel Sheet ({leadsCount} Leads)</span>
+        </button>
+      </div>
     </div>
   );
 }

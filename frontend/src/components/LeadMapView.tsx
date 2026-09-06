@@ -31,11 +31,24 @@ function MapBoundsFitter({ leads }: { leads: LeadRecord[] }) {
   return null;
 }
 
-interface LeadMapViewProps {
-  leads: LeadRecord[];
+function MapHoverFitter({ leads, hoveredLeadId }: { leads: LeadRecord[]; hoveredLeadId?: string | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!hoveredLeadId) return;
+    const lead = leads.find((l) => l.id === hoveredLeadId);
+    if (lead && lead.latitude && lead.longitude) {
+      map.flyTo([lead.latitude, lead.longitude], 16, { animate: true, duration: 0.5 });
+    }
+  }, [hoveredLeadId, leads, map]);
+  return null;
 }
 
-export default function LeadMapView({ leads }: LeadMapViewProps) {
+interface LeadMapViewProps {
+  leads: LeadRecord[];
+  hoveredLeadId?: string | null;
+}
+
+export default function LeadMapView({ leads, hoveredLeadId }: LeadMapViewProps) {
   const defaultCenter: [number, number] = [21.1702, 72.8311]; // Default fallback
 
   return (
@@ -71,6 +84,7 @@ export default function LeadMapView({ leads }: LeadMapViewProps) {
         </LayersControl>
 
         <MapBoundsFitter leads={leads} />
+        <MapHoverFitter leads={leads} hoveredLeadId={hoveredLeadId} />
 
         {leads.map((lead) => {
           if (!lead.latitude || !lead.longitude) return null;

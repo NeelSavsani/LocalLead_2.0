@@ -2,23 +2,18 @@
 
 import React, { useState, useRef } from "react";
 import dynamic from "next/dynamic";
-import {
-  Radar,
-  Sparkles,
-  PhoneCall,
-  LayoutDashboard,
-  ShieldCheck,
-  CheckCircle2,
-  FileSpreadsheet,
-} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
 import LeadSearchForm from "@/components/LeadSearchForm";
 import LiveProgress from "@/components/LiveProgress";
 import LeadTable from "@/components/LeadTable";
 import ExportButton from "@/components/ExportButton";
+import AppHeader from "@/components/AppHeader";
 
 const LeadMapView = dynamic(() => import("@/components/LeadMapView"), { ssr: false });
 
 import {
+  AddToSheetResponse,
   LeadRecord,
   ScanCandidateEvent,
   ScanRequest,
@@ -28,14 +23,17 @@ import {
 } from "@/lib/api";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [isScanning, setIsScanning] = useState(false);
-  const [viewMode, setViewMode] = useState<"table" | "map">("table");
+  const [hoveredLeadId, setHoveredLeadId] = useState<string | null>(null);
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [targetLimit, setTargetLimit] = useState(20);
   const [currentEvent, setCurrentEvent] = useState<ScanCandidateEvent | null>(null);
   const [logs, setLogs] = useState<ScanCandidateEvent[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; total: number } | null>(null);
+  const [sheetCount, setSheetCount] = useState<number | undefined>(undefined);
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -62,7 +60,6 @@ export default function DashboardPage() {
     setTargetLimit(req.limit);
     setIsScanning(true);
 
-    // Close any previous stream
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
       eventSourceRef.current = null;
@@ -72,17 +69,14 @@ export default function DashboardPage() {
       const resp = await startScan(req);
       setCurrentJobId(resp.job_id);
 
-      // Connect to real-time Server-Sent Events stream
       const es = createEventSourceStream(
         resp.job_id,
         (event) => {
           setCurrentEvent(event);
           setLogs((prev) => [...prev, event]);
 
-          // Append qualified lead to list in real-time
           if (event.status === "QUALIFIED" && event.lead) {
             setLeads((prev) => {
-              // Ensure uniqueness by ID
               if (prev.some((item) => item.id === event.lead!.id)) {
                 return prev;
               }
@@ -90,7 +84,6 @@ export default function DashboardPage() {
             });
           }
 
-          // Terminate scan if finished, stopped, or target limit reached
           if (
             event.status === "COMPLETED" ||
             event.status === "STOPPED" ||
@@ -121,56 +114,59 @@ export default function DashboardPage() {
     }
   };
 
+  const handleAddedToSheet = (result: AddToSheetResponse) => {
+    const dup =
+      result.skipped_duplicates > 0
+        ? ` (${result.skipped_duplicates} duplicate${result.skipped_duplicates === 1 ? "" : "s"} skipped)`
+        : "";
+    setToast({
+      message: `Added ${result.added_count} new lead${result.added_count === 1 ? "" : "s"}${dup}`,
+      total: result.total_leads,
+    });
+    setSheetCount(result.total_leads);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-100 text-slate-900 selection:bg-emerald-500 selection:text-white">
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-white backdrop-blur-lg border-b border-slate-200 w-full">
-        <div className="w-full px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <Radar className="w-5 h-5 text-white animate-subtle" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-base tracking-tight text-slate-900">LocalLeadPulse</span>
-                <span className="text-[10px] uppercase font-mono font-bold bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                  v2.0
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 hidden sm:block">
-                Two-Layer Verified B2B Lead Engine for Local Businesses Without Websites
-              </p>
-            </div>
-          </div>
+      <AppHeader active="scanner" sheetCount={sheetCount} />
 
-          {/* Navigation Tabs */}
-          <div className="flex items-center gap-2">
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-[60] max-w-sm w-[calc(100%-2rem)] bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-700 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold">{toast.message}</p>
+              <p className="text-[11px] text-slate-400 mt-1">Sheet now has {toast.total} leads</p>
+            </div>
             <button
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-emerald-50 text-emerald-700 border border-emerald-200"
+              onClick={() => setToast(null)}
+              className="text-slate-400 hover:text-white"
+              aria-label="Dismiss notification"
             >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Lead Scanner</span>
+              <X className="w-4 h-4" />
             </button>
           </div>
+          <button
+            onClick={() => router.push("/sheet")}
+            className="mt-3 w-full text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg py-2"
+          >
+            Open Sheet
+          </button>
         </div>
-      </header>
+      )}
 
-      {/* Main Content Area - Full Width */}
       <main className="flex-1 w-full px-4 sm:px-6 py-6 space-y-6">
-        {/* Error Alert if any */}
         {errorMessage && (
-          <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 px-4 py-3 rounded-xl text-xs flex items-center justify-between">
+          <div className="bg-rose-500/10 border border-rose-500/30 text-rose-700 px-4 py-3 rounded-xl text-xs flex items-center justify-between">
             <span>{errorMessage}</span>
             <button
               onClick={() => setErrorMessage(null)}
-              className="text-rose-400 hover:text-rose-200 font-bold ml-4"
+              className="text-rose-400 hover:text-rose-600 font-bold ml-4"
             >
               ✕
             </button>
           </div>
         )}
 
-        {/* Lead Search Input Console */}
         <section>
           <LeadSearchForm
             onStartScan={handleStartScan}
@@ -179,7 +175,6 @@ export default function DashboardPage() {
           />
         </section>
 
-        {/* Live Progress & Candidate Telemetry */}
         {(isScanning || logs.length > 0) && (
           <section>
             <LiveProgress
@@ -192,46 +187,35 @@ export default function DashboardPage() {
           </section>
         )}
 
-        {/* Excel Download Action Bar & View Toggle */}
         {leads.length > 0 && (
           <section className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <ExportButton
                 jobId={currentJobId}
+                leads={leads}
                 leadsCount={leads.length}
                 isScanning={isScanning}
+                onAddedToSheet={handleAddedToSheet}
+                onAddError={(msg) => setErrorMessage(msg)}
               />
-              <div className="flex bg-slate-200/50 p-1 rounded-lg">
-                <button
-                  onClick={() => setViewMode("table")}
-                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                    viewMode === "table" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                  }`}
-                >
-                  List View
-                </button>
-                <button
-                  onClick={() => setViewMode("map")}
-                  className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                    viewMode === "map" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                  }`}
-                >
-                  Map View
-                </button>
+            </div>
+            <div className="flex flex-col lg:flex-row gap-6">
+              <div className="w-full lg:w-[58%]">
+                <LeadTable 
+                  leads={leads} 
+                  isScanning={isScanning} 
+                  onLeadHover={setHoveredLeadId} 
+                  hoveredLeadId={hoveredLeadId} 
+                />
+              </div>
+              <div className="w-full lg:w-[42%] lg:sticky lg:top-24 self-start">
+                <LeadMapView leads={leads} hoveredLeadId={hoveredLeadId} />
               </div>
             </div>
-
-            {/* Content Area */}
-            {viewMode === "table" ? (
-              <LeadTable leads={leads} isScanning={isScanning} />
-            ) : (
-              <LeadMapView leads={leads} />
-            )}
           </section>
         )}
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-slate-200 bg-white/60 py-6 text-center text-xs text-slate-500">
         <p>
           LocalLeadPulse 2.0 • Dual-Layer Verification Engine (Maps Listing & Aggregator Blacklist Exclusion)

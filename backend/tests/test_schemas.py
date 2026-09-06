@@ -34,6 +34,18 @@ def test_lead_record_defaults():
     assert "Gandhinagar" in lead.address
 
 
+def test_sheet_lead_record_call_status_defaults_pending():
+    from app.models.schemas import SheetLeadRecord
+
+    record = SheetLeadRecord(
+        id="SHT-0001",
+        name="Shree Ram Auto Care",
+        category="Auto Garage",
+        address="Sector 16, Gandhinagar",
+    )
+    assert record.call_status == "Pending"
+
+
 def test_scan_progress_state():
     progress = ScanProgress(
         job_id="job-123",

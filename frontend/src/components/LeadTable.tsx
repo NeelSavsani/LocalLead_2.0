@@ -7,9 +7,11 @@ import { LeadRecord } from "@/lib/api";
 interface LeadTableProps {
   leads: LeadRecord[];
   isScanning: boolean;
+  onLeadHover?: (id: string | null) => void;
+  hoveredLeadId?: string | null;
 }
 
-export default function LeadTable({ leads, isScanning }: LeadTableProps) {
+export default function LeadTable({ leads, isScanning, onLeadHover, hoveredLeadId }: LeadTableProps) {
   if (leads.length === 0) {
     return (
       <div className="bg-white/80 backdrop-blur-md border border-slate-200 rounded-2xl p-12 text-center shadow-xl">
@@ -58,7 +60,13 @@ export default function LeadTable({ leads, isScanning }: LeadTableProps) {
             {leads.map((lead, idx) => (
               <tr
                 key={lead.id || idx}
-                className="hover:bg-slate-50 transition-colors group"
+                className={`transition-colors group ${
+                  hoveredLeadId === lead.id
+                    ? "bg-emerald-50/80"
+                    : "hover:bg-slate-50"
+                }`}
+                onMouseEnter={() => onLeadHover?.(lead.id)}
+                onMouseLeave={() => onLeadHover?.(null)}
               >
                 <td className="py-3.5 px-4 font-mono font-medium text-slate-500">
                   {lead.id}

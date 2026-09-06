@@ -5,6 +5,14 @@ export interface ScanRequest {
   use_mock: boolean;
 }
 
+export const CALL_STATUS_OPTIONS = [
+  "Pending",
+  "Interested",
+  "Not Interested",
+  "Not Reachable",
+  "Other",
+] as const;
+
 export interface LeadRecord {
   id: string;
   name: string;
@@ -58,6 +66,23 @@ export interface ScanResultsResponse {
   target_limit: number;
   qualified_count: number;
   leads: LeadRecord[];
+}
+
+export interface SheetLeadRecord extends LeadRecord {
+  notes?: string;
+  updated_at?: string | null;
+}
+
+export interface AddToSheetResponse {
+  added_count: number;
+  skipped_duplicates: number;
+  total_leads: number;
+}
+
+export interface SheetListResponse {
+  leads: SheetLeadRecord[];
+  total_leads: number;
+  categories: string[];
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
@@ -124,4 +149,67 @@ export function createEventSourceStream(
   };
 
   return es;
+}
+
+async function readError(res: Response, fallback: string): Promise<string> {
+  const err = await res.json().catch(() => ({ detail: fallback }));
+  if (typeof err.detail === "string") return err.detail;
+  return fallback;
+}
+
+export async function addLeadsToSheet(leads: LeadRecord[]): Promise<AddToSheetResponse> {
+  const res = await fetch(`${API_BASE}/api/sheet/add`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(leads),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Failed to add leads to sheet"));
+  }
+  return res.json();
+}
+
+export async function getSheetLeads(params?: {
+  search?: string;
+  category?: string;
+  call_status?: string;
+}): Promise<SheetListResponse> {
+  const query = new URLSearchParams();
+  if (params?.search) query.set("search", params.search);
+  if (params?.category && params.category !== "All") query.set("category", params.category);
+  if (params?.call_status && params.call_status !== "All") query.set("call_status", params.call_status);
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const res = await fetch(`${API_BASE}/api/sheet${suffix}`);
+  if (!res.ok) {
+    throw new Error(await readError(res, "Failed to load sheet"));
+  }
+  return res.json();
+}
+
+export async function updateSheetLead(
+  leadId: string,
+  payload: { call_status?: string; notes?: string }
+): Promise<SheetLeadRecord> {
+  const res = await fetch(`${API_BASE}/api/sheet/${encodeURIComponent(leadId)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Failed to update lead"));
+  }
+  return res.json();
+}
+
+export async function deleteSheetLead(leadId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/sheet/${encodeURIComponent(leadId)}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Failed to delete lead"));
+  }
+}
+
+export function getSheetExcelDownloadUrl(): string {
+  return `${API_BASE}/api/sheet/export`;
 }

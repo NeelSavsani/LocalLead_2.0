@@ -31,6 +31,12 @@ htmlcov/
 # Exports
 backend/exports/*.xlsx
 
+# Persistent sheet workspace
+backend/data/*.db
+backend/data/*.db-journal
+backend/data/*.db-wal
+backend/data/_test_sheets/
+
 # Node
 frontend/node_modules/
 frontend/.next/
